@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "748715354599",
+    "project_id": "abbproject-dbeb3",
+    "storage_bucket": "abbproject-dbeb3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:748715354599:android:b36a51ffb9b7563da1f542",
+        "android_client_info": {
+          "package_name": "com.example.abbproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpA-_ZCW_1splAMiBugma4eHX5_pcXI3g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
