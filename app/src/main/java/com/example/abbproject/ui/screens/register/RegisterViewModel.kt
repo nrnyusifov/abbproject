@@ -3,6 +3,7 @@ package com.example.abbproject.ui.screens.register
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -35,6 +36,24 @@ class RegisterViewModel @Inject constructor(
         profileImageUri: Uri? = null
     ) {
         Log.d("Register", "Starting registration process...")
+        when {
+            firstName.isBlank() || lastName.isBlank() -> {
+                _registerState.value = RegisterState.Error("Name and surname cannot be empty.")
+                return
+            }
+            email.isBlank() -> {
+                _registerState.value = RegisterState.Error("Email is required.")
+                return
+            }
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
+                _registerState.value = RegisterState.Error("Please enter a valid email address.")
+                return
+            }
+            password.length < 6 -> {
+                _registerState.value = RegisterState.Error("Password must be at least 6 characters.")
+                return
+            }
+        }
         _registerState.value = RegisterState.Loading
 
         auth.createUserWithEmailAndPassword(email, password)

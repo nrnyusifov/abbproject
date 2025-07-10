@@ -1,37 +1,40 @@
 package com.example.abbproject.ui.screens.emailverification
 
-import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.abbproject.navigation.Routes
-
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
 
 @Composable
 fun EmailVerifyScreen(
     navController: NavController,
     viewModel: EmailVerifyViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
+    val email = FirebaseAuth.getInstance().currentUser?.email ?: "your@email.com"
+    var isVerifiedScreen by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        while (!isVerifiedScreen) {
+            viewModel.reloadUser { verified ->
+                isVerifiedScreen = verified
+            }
+            delay(3000)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -40,48 +43,92 @@ fun EmailVerifyScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Verification link sent.")
-        Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            viewModel.reloadUser { isVerified ->
-                if (isVerified) {
-                    Toast.makeText(context, "Registration successfully completed!", Toast.LENGTH_LONG).show()
+        if (!isVerifiedScreen) {
+            Text(
+                text = "📨",
+                fontSize = 40.sp
+            )
 
-                    navController.navigate(Routes.Login.route) {
-                        popUpTo(Routes.Emailverify.route) { inclusive = true }
-                    }
+            Spacer(modifier = Modifier.height(24.dp))
 
-                } else {
-                    message = "Email is not verified yet."
-                }
-            }
-        }) {
-            Text("I’ve Verified")
-        }
+            Text(
+                text = "Please verify your email",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
 
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Button(onClick = {
-            viewModel.resendVerification { success, error ->
-                message = if (success) "Email is sent again." else error ?: "Error occured."
-            }
-        }) {
-            Text("Send again")
-        }
-
-        if (message.isNotBlank()) {
             Spacer(modifier = Modifier.height(12.dp))
-            Text(message)
+
+            Text(
+                text = "We sent an email to\n$email",
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Just click on the link in that email to complete your signup. If you don't see it, check your spam folder.",
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Still can’t find the email?",
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(onClick = {
+                viewModel.resendVerification { success, error ->
+                    message = if (success) "Verification email resent." else error ?: "An error occurred."
+                }
+            }) {
+                Text("Resend Verification Email")
+            }
+
+            if (message.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(text = message, color = MaterialTheme.colorScheme.primary)
+            }
+        } else {
+            Text(
+                text = "✅",
+                fontSize = 40.sp
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Email Verified",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Your email address was successfully verified.",
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(onClick = {
+                navController.navigate(Routes.Login.route) {
+                    popUpTo(Routes.Emailverify.route) { inclusive = true }
+                }
+            }) {
+                Text("Back to Login")
+            }
         }
     }
 }
-
-
-@Preview
-@Composable
-fun PreviewEmailVerificationScreen() {
-    EmailVerifyScreen(navController = rememberNavController())
-}
-

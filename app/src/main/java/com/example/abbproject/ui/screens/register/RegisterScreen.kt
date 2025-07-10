@@ -46,9 +46,9 @@ fun RegisterScreen(navController: NavController) {
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val imageUri = remember { mutableStateOf<Uri?>(null) }
 
     val context = LocalContext.current
-    val imageUri = remember { mutableStateOf<Uri?>(null) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
