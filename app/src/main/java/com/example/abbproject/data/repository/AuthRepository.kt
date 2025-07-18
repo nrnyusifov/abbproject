@@ -29,18 +29,10 @@ class AuthRepository @Inject constructor(private val auth: FirebaseAuth){
     fun isUserLoggedIn() : Boolean = auth.currentUser != null
     fun logout() = auth.signOut()
 
-    fun reloadUser(onComplete: () -> Unit) {
-        auth.currentUser?.reload()?.addOnCompleteListener {
-            onComplete()
-        }
-    }
-
     fun getCurrentUser() = auth.currentUser
 
     fun isEmailVerified(): Boolean {
         return auth.currentUser?.isEmailVerified == true
     }
-
-
 
 }

@@ -65,10 +65,6 @@ class RegisterViewModel @Inject constructor(
                     return@addOnSuccessListener
                 }
 
-                Log.d("Register", "User created with UID: $uid")
-                sendVerificationEmail()
-                Log.d("Register", "Verification email sent.")
-
                 if (profileImageUri != null) {
                     Log.d("Register", "Profile image URI is provided: $profileImageUri")
 
@@ -78,23 +74,30 @@ class RegisterViewModel @Inject constructor(
                         profileImageUri,
                         onSuccess = { imageUrl ->
                             Log.d("Register", "Image uploaded successfully: $imageUrl")
+                            sendVerificationEmail()
+                            Log.d("Register", "Verification email sent.")
                             saveUserData(uid, firstName, lastName, email, imageUrl)
                         },
                         onError = { error ->
                             _registerState.value = RegisterState.Error(error.message ?: "Image upload failed")
+                            auth.currentUser?.delete()
                             Log.e("Register", "Image upload failed: ${error.message}")
                         }
                     )
                 } else {
                     Log.d("Register", "No profile image provided, proceeding to save user data.")
+                    sendVerificationEmail()
+                    Log.d("Register", "Verification email sent.")
                     saveUserData(uid, firstName, lastName, email, "")
                 }
             }
             .addOnFailureListener {
                 Log.e("Register", "User creation failed: ${it.message}")
                 _registerState.value = RegisterState.Error(it.message ?: "Registration failed")
+                auth.currentUser?.delete()
             }
     }
+
 
     private fun sendVerificationEmail() {
         auth.currentUser?.sendEmailVerification()
@@ -103,9 +106,12 @@ class RegisterViewModel @Inject constructor(
                     Log.d("Register", "Verification email sent.")
                 } else {
                     Log.e("Register", "Failed to send email: ${task.exception?.message}")
+                    auth.currentUser?.delete()
+                    _registerState.value = RegisterState.Error("Failed to send verification email")
                 }
             }
     }
+
 
     private fun uploadProfileImage(
         context: Context,
@@ -171,6 +177,7 @@ class RegisterViewModel @Inject constructor(
             .addOnFailureListener {
                 Log.e("Register", "Failed to save user data: ${it.message}")
                 _registerState.value = RegisterState.Error(it.message ?: "Failed to save user data")
+                auth.currentUser?.delete()
             }
     }
 

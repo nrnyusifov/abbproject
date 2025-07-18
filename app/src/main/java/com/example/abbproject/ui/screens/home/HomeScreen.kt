@@ -46,6 +46,21 @@ fun HomeScreen(
             Text(text = "Welcome, ${it.firstName} ${it.lastName}")
             Text(text = "Email: ${it.email}")
         } ?: Text("Loading user info...")
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = {
+                viewModel.signOut()
+                navController.navigate("login") {
+                    popUpTo("home") { inclusive = true }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Sign Out")
+        }
     }
 }
+
 

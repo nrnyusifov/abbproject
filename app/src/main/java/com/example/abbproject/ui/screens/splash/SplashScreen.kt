@@ -25,7 +25,7 @@ fun SplashScreen(navController: NavController) {
 
     LaunchedEffect(true) {
         visible = true
-        delay(2500) // wait for animation to play
+        delay(2500)
         navController.navigate(Routes.Login.route) {
             popUpTo(Routes.Splash.route) { inclusive = true }
         }
@@ -43,7 +43,7 @@ fun SplashScreen(navController: NavController) {
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
-                    painter = painterResource(id = R.drawable.logo_android), // 🔁 your logo image
+                    painter = painterResource(id = R.drawable.logo_android),
                     contentDescription = "App Logo",
                     modifier = Modifier.size(160.dp)
                 )

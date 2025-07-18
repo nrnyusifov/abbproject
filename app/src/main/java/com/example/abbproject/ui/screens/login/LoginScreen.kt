@@ -146,7 +146,7 @@ fun LoginScreen(
             onClick = { /* Google Sign-In (not implemented) */ },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.onSurface // normal text color
+                contentColor = MaterialTheme.colorScheme.onSurface
             )
         ) {
             Icon(

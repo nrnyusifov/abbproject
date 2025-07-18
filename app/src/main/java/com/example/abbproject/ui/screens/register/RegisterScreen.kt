@@ -94,7 +94,6 @@ fun RegisterScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ✅ Profile image picker UI
             Box(
                 modifier = Modifier
                     .size(96.dp)

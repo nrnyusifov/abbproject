@@ -35,4 +35,9 @@ class HomeViewModel @Inject constructor(
                 Log.e("HomeViewModel", "Failed to load user: ${it.message}")
             }
     }
+
+    fun signOut() {
+        auth.signOut()
+    }
+
 }
