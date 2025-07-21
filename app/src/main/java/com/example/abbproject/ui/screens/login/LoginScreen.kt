@@ -3,7 +3,6 @@ package com.example.abbproject.ui.screens.login
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,13 +28,27 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val loginState by viewModel.loginState.collectAsState()
+    val resetMessage by viewModel.resetPasswordMessage.collectAsState()
 
-    var email by remember { mutableStateOf("") }
+
+    val rememberedEmail by viewModel.savedEmail.collectAsState(initial = "")
+    val rememberedCheck by viewModel.rememberMe.collectAsState(initial = false)
+
+    var email by remember { mutableStateOf(rememberedEmail) }
     var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(false) }
+    var rememberMe by remember { mutableStateOf(rememberedCheck) }
+
 
     val isLoading = loginState is LoginState.Loading
     val isError = loginState is LoginState.Error
+
+    LaunchedEffect(Unit) {
+        if (viewModel.isUserLoggedIn()) {
+            navController.navigate(Routes.Home.route) {
+                popUpTo(Routes.Login.route) { inclusive = true }
+            }
+        }
+    }
 
     LaunchedEffect(loginState) {
         if (loginState is LoginState.Success) {
@@ -110,7 +123,9 @@ fun LoginScreen(
                 Text("Remember me")
             }
 
-            TextButton(onClick = { /* Forgot Password (not functional) */ }) {
+            TextButton(onClick = {
+                viewModel.sendPasswordReset(email.trim())
+            }) {
                 Text("Forgot Password?", style = MaterialTheme.typography.labelMedium)
             }
         }
@@ -119,7 +134,7 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                viewModel.login(email.trim(), password.trim())
+                viewModel.login(email.trim(), password.trim(), rememberMe)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -153,7 +168,7 @@ fun LoginScreen(
                 painter = painterResource(id = R.drawable.icon_google),
                 contentDescription = "Google",
                 modifier = Modifier.size(20.dp),
-                tint = Color.Unspecified // show original icon colors
+                tint = Color.Unspecified
             )
             Spacer(Modifier.width(8.dp))
             Text("Continue with Google")
@@ -204,6 +219,18 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodyLarge
             )
+        }
+        if (!resetMessage.isNullOrEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = resetMessage ?: "",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            LaunchedEffect(resetMessage) {
+                kotlinx.coroutines.delay(3000)
+                viewModel.clearResetMessage()
+            }
         }
     }
 }

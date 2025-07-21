@@ -26,8 +26,16 @@ class AuthRepository @Inject constructor(private val auth: FirebaseAuth){
         }
     }
 
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
+        return try {
+            FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun isUserLoggedIn() : Boolean = auth.currentUser != null
-    fun logout() = auth.signOut()
 
     fun getCurrentUser() = auth.currentUser
 

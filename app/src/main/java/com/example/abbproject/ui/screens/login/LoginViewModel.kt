@@ -3,6 +3,7 @@ package com.example.abbproject.ui.screens.login
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.abbproject.data.local.UserPreferences
 import com.example.abbproject.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,12 +12,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val authRepository: AuthRepository) : ViewModel() {
+class LoginViewModel @Inject constructor(private val authRepository: AuthRepository,
+                                         private val userPreferences: UserPreferences)
+    : ViewModel() {
+    val rememberMe = userPreferences.rememberMeFlow
+    val savedEmail = userPreferences.savedEmailFlow
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState
 
-    fun login(email: String, password: String) {
+    private val _resetPasswordMessage = MutableStateFlow<String?>(null)
+    val resetPasswordMessage: StateFlow<String?> = _resetPasswordMessage
+
+    fun login(email: String, password: String, rememberMeChecked: Boolean) {
         viewModelScope.launch {
             Log.d("LoginViewModel", "Login attempt started for email: $email")
             _loginState.value = LoginState.Loading
@@ -34,6 +42,8 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
                     )
                     return@launch
                 }
+
+                userPreferences.saveCredentials(email, rememberMeChecked)
 
                 _loginState.value = LoginState.Success
                 Log.d("LoginViewModel", "User logged in successfully: ${user?.email}")
@@ -64,6 +74,26 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
         val isLoggedIn = authRepository.isUserLoggedIn()
         Log.d("LoginViewModel", "User logged in: $isLoggedIn")
         return isLoggedIn
+    }
+
+    fun sendPasswordReset(email: String) {
+        viewModelScope.launch {
+            if (email.isBlank()) {
+                _resetPasswordMessage.value = "Please enter your email first."
+                return@launch
+            }
+
+            val result = authRepository.sendPasswordResetEmail(email)
+            _resetPasswordMessage.value = if (result.isSuccess) {
+                "Password reset email sent!"
+            } else {
+                result.exceptionOrNull()?.message ?: "Failed to send reset email."
+            }
+        }
+    }
+
+    fun clearResetMessage() {
+        _resetPasswordMessage.value = null
     }
 }
 
