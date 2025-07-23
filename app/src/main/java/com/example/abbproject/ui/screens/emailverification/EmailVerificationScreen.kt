@@ -1,13 +1,10 @@
 package com.example.abbproject.ui.screens.emailverification
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -15,7 +12,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.abbproject.navigation.Routes
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import kotlinx.coroutines.delay
 
 @Composable
@@ -35,6 +34,16 @@ fun EmailVerifyScreen(
             delay(3000)
         }
     }
+
+    LaunchedEffect(Unit) {
+        delay(60_000)
+        val user = Firebase.auth.currentUser
+        user?.reload()
+        if (user != null && !user.isEmailVerified) {
+            user.delete()
+        }
+    }
+
 
     Column(
         modifier = Modifier

@@ -89,6 +89,21 @@ class RegisterViewModel @Inject constructor(
                     sendVerificationEmail()
                     Log.d("Register", "Verification email sent.")
                     saveUserData(uid, firstName, lastName, email, "")
+                    val user = FirebaseAuth.getInstance().currentUser
+                    if (user != null) {
+                        user.sendEmailVerification()
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    Log.d("Register", "Verification email sent.")
+                                    saveUserData(uid, firstName, lastName, email, "")
+                                } else {
+                                    Log.e("Register", "Failed to send email: ${task.exception?.message}")
+                                }
+                            }
+                    } else {
+                        Log.e("Register", "No current user found, possibly deleted or not created.")
+                    }
+
                 }
             }
             .addOnFailureListener {

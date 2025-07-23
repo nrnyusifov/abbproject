@@ -1,6 +1,6 @@
 package com.example.abbproject.ui.screens.home
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -10,12 +10,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import com.example.abbproject.navigation.Routes
 
 @Composable
 fun HomeScreen(
@@ -30,21 +29,37 @@ fun HomeScreen(
             .padding(16.dp)
     ) {
         user?.let {
-            if (it.imageUrl.isNotEmpty()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            ) {
                 AsyncImage(
                     model = it.imageUrl,
                     contentDescription = "Profile Image",
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(55.dp)
                         .clip(CircleShape)
-                        .align(Alignment.CenterHorizontally)
+                        .clickable {
+                            navController.navigate(Routes.Profile.route)
+                        }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+                Spacer(modifier = Modifier.width(12.dp))
 
-            Text(text = "Welcome, ${it.firstName} ${it.lastName}")
-            Text(text = "Email: ${it.email}")
+                Column {
+                    Text(
+                        text = "Hello, ${it.firstName}!",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Nice to see you again 😊",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         } ?: Text("Loading user info...")
 
         Spacer(modifier = Modifier.weight(1f))
@@ -52,8 +67,8 @@ fun HomeScreen(
         Button(
             onClick = {
                 viewModel.signOut()
-                navController.navigate("login") {
-                    popUpTo("home") { inclusive = true }
+                navController.navigate(Routes.Login.route) {
+                    popUpTo(Routes.Home.route) { inclusive = true }
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -62,5 +77,6 @@ fun HomeScreen(
         }
     }
 }
+
 
 

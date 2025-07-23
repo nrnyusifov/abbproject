@@ -9,6 +9,7 @@ import com.example.abbproject.ui.screens.login.LoginScreen
 import com.example.abbproject.ui.screens.register.RegisterScreen
 import com.example.abbproject.ui.screens.splash.SplashScreen
 import com.example.abbproject.ui.screens.home.HomeScreen
+import com.example.abbproject.ui.screens.profile.ProfileScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -30,6 +31,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(Routes.Emailverify.route) {
             EmailVerifyScreen(navController)
+        }
+        composable(Routes.Profile.route) {
+            ProfileScreen(navController)
         }
     }
 }
