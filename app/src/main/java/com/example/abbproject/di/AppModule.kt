@@ -25,7 +25,6 @@ object AppModule{
     @Singleton
     fun provideAuthRepository(auth: FirebaseAuth): AuthRepository = AuthRepository(auth)
 
-
     @Provides
     @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -33,7 +32,6 @@ object AppModule{
     @Provides
     @Singleton
     fun provideFirebaseStorage(): FirebaseStorage = FirebaseStorage.getInstance()
-
 
     @Provides
     @Singleton

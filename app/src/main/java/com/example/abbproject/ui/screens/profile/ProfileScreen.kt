@@ -8,10 +8,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
@@ -58,7 +58,7 @@ fun ProfileScreen(
                     onClick = { navController.popBackStack() },
                     modifier = Modifier.align(Alignment.CenterStart)
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             }
 
@@ -135,22 +135,19 @@ fun ProfileScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Phone, contentDescription = null, tint = Color(0xFF2962FF))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "+994 70 402 01 64", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "My phone number", style = MaterialTheme.typography.bodyMedium)
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Email, contentDescription = null, tint = Color(0xFF2962FF))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = user?.email ?: "example@gmail.com", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "My email address", style = MaterialTheme.typography.bodyMedium)
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF2962FF))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "${user?.firstName ?: ""} ${user?.lastName ?: ""}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Text(text = "Personal information", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
@@ -177,7 +174,7 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ExitToApp,
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = "Logout",
                         tint = Color.Red
                     )
