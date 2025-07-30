@@ -123,40 +123,59 @@ class RegisterViewModel @Inject constructor(
         onError: (Exception) -> Unit
     ) {
         try {
+            Log.d("Upload", "Creating temp file from URI...")
             val tempFile = createTempFileFromUri(context, uid, uri)
+            Log.d("Upload", "Temp file created: ${tempFile.absolutePath}, size: ${tempFile.length()} bytes")
+
             val storageRef = Firebase.storage.reference.child("users/$uid/profile.jpg")
+            Log.d("Upload", "Starting upload to Firebase at: users/$uid/profile.jpg")
 
             storageRef.putFile(tempFile.toUri())
                 .addOnSuccessListener {
+                    Log.d("Upload", "Upload successful. Fetching download URL...")
+
                     storageRef.downloadUrl
                         .addOnSuccessListener { downloadUri ->
+                            Log.d("Upload", "Download URL fetched successfully: $downloadUri")
                             onSuccess(downloadUri.toString())
-                            tempFile.delete()
+                            val deleted = tempFile.delete()
+                            Log.d("Upload", "Temp file deleted after success: $deleted")
                         }
-                        .addOnFailureListener {
-                            onError(it)
-                            tempFile.delete()
+                        .addOnFailureListener { downloadError ->
+                            Log.e("Upload", "Failed to get download URL: ${downloadError.message}", downloadError)
+                            onError(downloadError)
+                            val deleted = tempFile.delete()
+                            Log.d("Upload", "Temp file deleted after download URL failure: $deleted")
                         }
+
                 }
-                .addOnFailureListener {
-                    onError(it)
-                    tempFile.delete()
+                .addOnFailureListener { uploadError ->
+                    Log.e("Upload", "Upload failed: ${uploadError.message}", uploadError)
+                    onError(uploadError)
+                    val deleted = tempFile.delete()
+                    Log.d("Upload", "Temp file deleted after upload failure: $deleted")
                 }
 
         } catch (e: Exception) {
+            Log.e("Upload", "Unexpected exception: ${e.message}", e)
             onError(e)
         }
     }
 
     private fun createTempFileFromUri(context: Context, uid: String, uri: Uri): File {
         val tempFile = File.createTempFile("profile_${uid}", ".jpg", context.cacheDir)
+        Log.d("Upload", "Temp file path: ${tempFile.absolutePath}")
+
         context.contentResolver.openInputStream(uri)?.use { input ->
             FileOutputStream(tempFile).use { output ->
                 input.copyTo(output)
+                Log.d("Upload", "Copied URI content to temp file.")
             }
         } ?: throw IOException("Cannot open stream from URI: $uri")
+
         return tempFile
     }
+
 
     private fun saveUserData(
         uid: String,
