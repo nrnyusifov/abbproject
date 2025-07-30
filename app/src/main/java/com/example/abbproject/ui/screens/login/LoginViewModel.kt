@@ -8,49 +8,60 @@ import com.example.abbproject.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val authRepository: AuthRepository,
-                                         private val userPreferences: UserPreferences)
-    : ViewModel() {
+class LoginViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
+    private val userPreferences: UserPreferences
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(LoginUiState())
+    val uiState: StateFlow<LoginUiState> = _uiState
+
     val rememberMe = userPreferences.rememberMeFlow
     val savedEmail = userPreferences.savedEmailFlow
 
-    private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
-    val loginState: StateFlow<LoginState> = _loginState
+    fun updateEmail(value: String) {
+        _uiState.update { it.copy(email = value) }
+    }
 
-    private val _resetPasswordMessage = MutableStateFlow<String?>(null)
-    val resetPasswordMessage: StateFlow<String?> = _resetPasswordMessage
+    fun updatePassword(value: String) {
+        _uiState.update { it.copy(password = value) }
+    }
 
-    fun login(email: String, password: String, rememberMeChecked: Boolean) {
+    fun updateRememberMe(value: Boolean) {
+        _uiState.update { it.copy(rememberMe = value) }
+    }
+
+    fun login() {
+        val state = _uiState.value
+
         viewModelScope.launch {
-            Log.d("LoginViewModel", "Login attempt started for email: $email")
-            _loginState.value = LoginState.Loading
+            Log.d("LoginViewModel", "Login attempt started for email: ${state.email}")
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, isSuccess = false) }
 
-            val result = authRepository.login(email, password)
+            val result = authRepository.login(state.email, state.password)
 
             if (result.isSuccess) {
-                Log.d("LoginViewModel", "Login successful for email: $email")
-
                 val user = authRepository.getCurrentUser()
                 if (user != null && !authRepository.isEmailVerified()) {
-                    Log.d("LoginViewModel", "Email not verified for user: $email")
-                    _loginState.value = LoginState.Error(
-                        "Your email address hasn’t been verified. Please check your inbox or try signing up again."
-                    )
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Your email address hasn’t been verified. Please check your inbox.",
+                            isSuccess = false
+                        )
+                    }
                     return@launch
                 }
 
-                userPreferences.saveCredentials(email, rememberMeChecked)
-
-                _loginState.value = LoginState.Success
-                Log.d("LoginViewModel", "User logged in successfully: ${user?.email}")
+                userPreferences.saveCredentials(state.email, state.rememberMe)
+                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } else {
                 val exceptionMessage = result.exceptionOrNull()?.message ?: ""
-                Log.e("LoginViewModel", "Login failed with exception: $exceptionMessage")
-
                 val userMessage = when {
                     "There is no user record" in exceptionMessage -> "No account found with this email."
                     "The password is invalid" in exceptionMessage -> "Incorrect password."
@@ -59,47 +70,36 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
                     else -> "Login failed. Please check your credentials and try again."
                 }
 
-                _loginState.value = LoginState.Error(userMessage)
-                Log.d("LoginViewModel", "Error message: $userMessage")
+                _uiState.update { it.copy(isLoading = false, errorMessage = userMessage, isSuccess = false) }
             }
         }
     }
 
     fun resetState() {
-        _loginState.value = LoginState.Idle
-        Log.d("LoginViewModel", "Login state reset to Idle")
+        _uiState.update { it.copy(isLoading = false, errorMessage = null, isSuccess = false) }
     }
 
-    fun isUserLoggedIn(): Boolean {
-        val isLoggedIn = authRepository.isUserLoggedIn()
-        Log.d("LoginViewModel", "User logged in: $isLoggedIn")
-        return isLoggedIn
+    fun isUserLoggedIn(): Boolean = authRepository.isUserLoggedIn()
+
+    fun clearErrorMessage() {
+        _uiState.update { it.copy(errorMessage = null) }
     }
+
 
     fun sendPasswordReset(email: String) {
         viewModelScope.launch {
             if (email.isBlank()) {
-                _resetPasswordMessage.value = "Please enter your email first."
+                _uiState.update { it.copy(errorMessage = "Please enter your email first.") }
                 return@launch
             }
 
             val result = authRepository.sendPasswordResetEmail(email)
-            _resetPasswordMessage.value = if (result.isSuccess) {
-                "Password reset email sent!"
-            } else {
-                result.exceptionOrNull()?.message ?: "Failed to send reset email."
+            _uiState.update {
+                it.copy(
+                    errorMessage = if (result.isSuccess) "Password reset email sent!" else
+                        result.exceptionOrNull()?.message ?: "Failed to send reset email."
+                )
             }
         }
     }
-
-    fun clearResetMessage() {
-        _resetPasswordMessage.value = null
-    }
-}
-
-sealed class LoginState {
-    object Idle : LoginState()
-    object Loading : LoginState()
-    object Success : LoginState()
-    data class Error(val message: String) : LoginState()
 }

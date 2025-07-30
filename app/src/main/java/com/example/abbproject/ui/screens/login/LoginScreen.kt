@@ -8,16 +8,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.*
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.abbproject.navigation.Routes
-import androidx.compose.ui.res.painterResource
 import com.example.abbproject.R
-
-
-
+import com.example.abbproject.navigation.Routes
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,20 +24,11 @@ fun LoginScreen(
     navController: NavController,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
-    val loginState by viewModel.loginState.collectAsState()
-    val resetMessage by viewModel.resetPasswordMessage.collectAsState()
-
-
-    val rememberedEmail by viewModel.savedEmail.collectAsState(initial = "")
-    val rememberedCheck by viewModel.rememberMe.collectAsState(initial = false)
-
-    var email by remember { mutableStateOf(rememberedEmail) }
-    var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(rememberedCheck) }
-
-
-    val isLoading = loginState is LoginState.Loading
-    val isError = loginState is LoginState.Error
+    val uiState by viewModel.uiState.collectAsState()
+    val resetMessage = uiState.errorMessage
+    val isLoading = uiState.isLoading
+    val isSuccess = uiState.isSuccess
+    val isError = resetMessage != null
 
     LaunchedEffect(Unit) {
         if (viewModel.isUserLoggedIn()) {
@@ -48,8 +38,8 @@ fun LoginScreen(
         }
     }
 
-    LaunchedEffect(loginState) {
-        if (loginState is LoginState.Success) {
+    LaunchedEffect(isSuccess) {
+        if (isSuccess) {
             navController.navigate(Routes.Home.route) {
                 popUpTo(Routes.Login.route) { inclusive = true }
             }
@@ -65,20 +55,15 @@ fun LoginScreen(
     ) {
         Image(
             painter = painterResource(id = R.drawable.logo_android),
-            contentDescription = "Google Icon",
+            contentDescription = "App Logo",
             modifier = Modifier.size(32.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Text("Sign in to your Account", style = MaterialTheme.typography.headlineSmall)
         Text(
-            text = "Sign in to your Account",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        Text(
-            text = "Enter your email and password to log in",
+            "Enter your email and password to log in",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -86,8 +71,8 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = uiState.email,
+            onValueChange = { viewModel.updateEmail(it) },
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
@@ -97,8 +82,8 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = uiState.password,
+            onValueChange = { viewModel.updatePassword(it) },
             label = { Text("Password") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
@@ -115,14 +100,14 @@ fun LoginScreen(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
-                    checked = rememberMe,
-                    onCheckedChange = { rememberMe = it }
+                    checked = uiState.rememberMe,
+                    onCheckedChange = { viewModel.updateRememberMe(it) }
                 )
                 Text("Remember me")
             }
 
             TextButton(onClick = {
-                viewModel.sendPasswordReset(email.trim())
+                viewModel.sendPasswordReset(uiState.email.trim())
             }) {
                 Text("Forgot Password?", style = MaterialTheme.typography.labelMedium)
             }
@@ -131,9 +116,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = {
-                viewModel.login(email.trim(), password.trim(), rememberMe)
-            },
+            onClick = { viewModel.login() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -150,13 +133,11 @@ fun LoginScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
         Text("Or", style = MaterialTheme.typography.bodySmall)
-
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedButton(
-            onClick = { /* Google Sign-In (not implemented) */ },
+            onClick = { /* TODO: Google Sign-In */ },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = MaterialTheme.colorScheme.onSurface
@@ -175,7 +156,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedButton(
-            onClick = { /* Facebook Sign-In (not implemented) */ },
+            onClick = { /* TODO: Facebook Sign-In */ },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = MaterialTheme.colorScheme.onSurface
@@ -198,7 +179,7 @@ fun LoginScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Don’t have an account? ")
+            Text("Don’t have an account? ")
             TextButton(
                 onClick = {
                     viewModel.resetState()
@@ -206,47 +187,21 @@ fun LoginScreen(
                 },
                 contentPadding = PaddingValues(0.dp)
             ) {
-                Text(text = "Sign Up")
+                Text("Sign Up")
             }
         }
 
         if (isError) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = (loginState as LoginState.Error).message,
+                text = resetMessage,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodyLarge
             )
-        }
-        if (!resetMessage.isNullOrEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = resetMessage ?: "",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.bodyMedium
-            )
             LaunchedEffect(resetMessage) {
-                kotlinx.coroutines.delay(3000)
-                viewModel.clearResetMessage()
+                delay(3000)
+                viewModel.clearErrorMessage()
             }
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

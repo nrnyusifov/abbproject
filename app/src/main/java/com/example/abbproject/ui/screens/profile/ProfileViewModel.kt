@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.example.abbproject.data.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,7 @@ class ProfileViewModel @Inject constructor(
         firestore.collection("users").document(uid)
             .get()
             .addOnSuccessListener { document ->
-                val userData = document.toObject(User::class.java)
+                val userData = document.toObject<User>()
                 _user.value = userData
             }
             .addOnFailureListener {

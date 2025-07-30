@@ -19,7 +19,7 @@ class EmailVerifyViewModel @Inject constructor() : ViewModel() {
 
     fun resendVerification(onResult: (Boolean, String?) -> Unit) {
         val user = auth.currentUser
-        if (user == null) {
+        user ?: run {
             Log.e("EmailVerify", "No user signed in")
             onResult(false, "User not signed in")
             return

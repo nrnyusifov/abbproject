@@ -39,8 +39,10 @@ fun EmailVerifyScreen(
         delay(60_000)
         val user = Firebase.auth.currentUser
         user?.reload()
-        if (user != null && !user.isEmailVerified) {
-            user.delete()
+        user?.let {
+            if (!it.isEmailVerified) {
+                user.delete()
+            }
         }
     }
 

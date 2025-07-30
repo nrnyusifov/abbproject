@@ -1,8 +1,6 @@
 package com.example.abbproject.ui.screens.register
 
 import android.net.Uri
-import android.provider.MediaStore
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,55 +12,38 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.abbproject.navigation.Routes
-import com.example.abbproject.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController) {
     val viewModel: RegisterViewModel = hiltViewModel()
-    val registerState by viewModel.registerState.collectAsState()
-
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val imageUri = remember { mutableStateOf<Uri?>(null) }
-
+    val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        if (uri != null) {
-            Log.d("RegisterScreen", "Selected image URI: $uri")
-            imageUri.value = uri
-        } else {
-            Log.d("RegisterScreen", "No image selected")
-        }
+    ) { uri: Uri? ->
+        viewModel.updateProfileImage(uri)
     }
 
-    LaunchedEffect(registerState) {
-        if (registerState is RegisterState.Success) {
+    LaunchedEffect(state.isSuccess) {
+        if (state.isSuccess) {
             navController.navigate(Routes.Emailverify.route)
         }
     }
@@ -72,22 +53,16 @@ fun RegisterScreen(navController: NavController) {
             .fillMaxSize()
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
-                }
+        Column(modifier = Modifier.weight(1f)) {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            Text("Register", style = MaterialTheme.typography.headlineSmall)
             Text(
-                text = "Register",
-                style = MaterialTheme.typography.headlineSmall
-            )
-
-            Text(
-                text = "Create an account to continue",
+                "Create an account to continue",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -105,9 +80,9 @@ fun RegisterScreen(navController: NavController) {
                     },
                 contentAlignment = Alignment.BottomEnd
             ) {
-                if (imageUri.value != null) {
+                if (state.profileImageUri != null) {
                     Image(
-                        painter = rememberAsyncImagePainter(imageUri.value),
+                        painter = rememberAsyncImagePainter(state.profileImageUri),
                         contentDescription = "Profile Image",
                         modifier = Modifier
                             .size(96.dp)
@@ -140,8 +115,8 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
-                value = firstName,
-                onValueChange = { firstName = it },
+                value = state.firstName,
+                onValueChange = { viewModel.updateFirstName(it) },
                 label = { Text("First Name") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -150,8 +125,8 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = lastName,
-                onValueChange = { lastName = it },
+                value = state.lastName,
+                onValueChange = { viewModel.updateLastName(it) },
                 label = { Text("Last Name") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -160,8 +135,8 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = state.email,
+                onValueChange = { viewModel.updateEmail(it) },
                 label = { Text("Email") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
@@ -171,8 +146,8 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = state.password,
+                onValueChange = { viewModel.updatePassword(it) },
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -183,36 +158,30 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = {
-                    viewModel.registerUser(
-                        context = context,
-                        firstName = firstName.trim(),
-                        lastName = lastName.trim(),
-                        email = email.trim(),
-                        password = password.trim(),
-                        profileImageUri = imageUri.value
-                    )
-                },
+                onClick = { viewModel.registerUser(context) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(25.dp)
             ) {
-                if (registerState is RegisterState.Loading) {
+                if (state.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         strokeWidth = 2.dp,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Register")
+                    Text(
+                        text = "Register",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
 
-            if (registerState is RegisterState.Error) {
-                val errorMsg = (registerState as RegisterState.Error).message
+            state.errorMessage?.let { message ->
                 Text(
-                    text = "Error: $errorMsg",
+                    text = "Error: $message",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(top = 8.dp)
@@ -222,27 +191,16 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Already have an account?")
-                TextButton(
-                    onClick = { navController.navigate(Routes.Login.route) },
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Text(text = "Log in")
+                Text("Already have an account?")
+                TextButton(onClick = { navController.navigate(Routes.Login.route) }) {
+                    Text("Log in")
                 }
             }
         }
     }
 }
 
-
-@Preview
-@Composable
-fun RegisterScreenPreview() {
-    RegisterScreen(navController = rememberNavController())
-}
