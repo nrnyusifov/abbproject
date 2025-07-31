@@ -19,7 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,7 +33,7 @@ fun AccountScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF9F9FB))
+            //.background(Color(0xFFF5F5F7))
     ) {
         TopAppBar(
             title = {},
@@ -75,17 +78,23 @@ fun AccountScreen() {
                     color = Color.Gray
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "$499.80",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold)) {
+                            append("$499")
+                        }
+                        withStyle(style = SpanStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)) {
+                            append(".80")
+                        }
+                    },
                     color = Color.Black
                 )
+
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -152,7 +161,7 @@ fun AccountScreen() {
                         fontWeight = FontWeight.SemiBold
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
                     Column {
                         Text(
@@ -177,7 +186,7 @@ fun AccountScreen() {
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
                     Column {
                         Text(
@@ -202,10 +211,10 @@ fun AccountScreen() {
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = "Account requisites",
+                        text = "Hesab rekvizitləri",
                         color = Color(0xFF1D5EDD),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
