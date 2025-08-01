@@ -133,6 +133,7 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation("com.google.accompanist:accompanist-navigation-animation:0.36.0")
 
 
 

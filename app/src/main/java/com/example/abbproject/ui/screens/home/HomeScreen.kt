@@ -74,6 +74,17 @@ fun HomeScreen(
 
         Button(
             onClick = {
+                navController.navigate(Routes.Account.route)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ){
+            Text("Account")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
                 viewModel.signOut()
                 navController.navigate(Routes.Login.route) {
                     popUpTo(Routes.Home.route) { inclusive = true }

@@ -7,4 +7,5 @@ sealed class Routes(val route: String) {
     object Home : Routes("home")
     object Emailverify : Routes("email_verification")
     object Profile : Routes("profile")
+    object Account: Routes("account")
 }

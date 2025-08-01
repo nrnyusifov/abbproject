@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.abbproject.ui.screens.account.AccountScreen
 import com.example.abbproject.ui.screens.emailverification.EmailVerifyScreen
 import com.example.abbproject.ui.screens.login.LoginScreen
 import com.example.abbproject.ui.screens.register.RegisterScreen
@@ -34,6 +35,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(Routes.Profile.route) {
             ProfileScreen(navController)
+        }
+        composable(Routes.Account.route) {
+            AccountScreen(navController)
         }
     }
 }
