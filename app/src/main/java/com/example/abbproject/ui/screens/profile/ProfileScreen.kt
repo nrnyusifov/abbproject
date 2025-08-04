@@ -1,6 +1,7 @@
 package com.example.abbproject.ui.screens.profile
 
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -96,15 +98,42 @@ fun ProfileScreen(
                         .offset(y = (-50).dp)
                         .zIndex(2f)
                 ) {
-                    AsyncImage(
-                        model = user?.imageUrl ?: R.drawable.icon_profile,
-                        contentDescription = "Profile Image",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape)
-                            .background(Color.LightGray)
-                            .border(2.dp, Color.White, CircleShape)
-                    )
+                    val imageBitmap = remember(user?.profileImageBase64) {
+                        user?.profileImageBase64?.takeIf { it.isNotBlank() }?.let {
+                            try {
+                                val bytes = android.util.Base64.decode(it, android.util.Base64.DEFAULT)
+                                android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                    }
+
+                    if (imageBitmap != null) {
+                        Image(
+                            bitmap = imageBitmap.asImageBitmap(),
+                            contentDescription = "Profile Image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .clip(CircleShape)
+                                .background(Color.LightGray)
+                                .border(width = 2.dp, Color.White, CircleShape)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Default Profile",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .clip(CircleShape)
+                                .background(Color.LightGray)
+                                .border(width = 2.dp, Color.White, CircleShape)
+                                .padding(24.dp)
+                        )
+                    }
+
 
                     Icon(
                         imageVector = Icons.Default.Edit,

@@ -1,23 +1,20 @@
 package com.example.abbproject.ui.screens.register
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import javax.inject.Inject
-import androidx.core.net.toUri
+import java.io.ByteArrayOutputStream
+import android.util.Base64
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
@@ -37,8 +34,6 @@ class RegisterViewModel @Inject constructor(
     fun registerUser(context: Context) {
         val userData = _uiState.value
 
-        Log.d("Register", "Starting registration process...")
-
         if (!validateInputs(userData)) return
 
         _uiState.update { it.copy(isLoading = true, errorMessage = null, isSuccess = false) }
@@ -47,15 +42,52 @@ class RegisterViewModel @Inject constructor(
             .addOnSuccessListener { result ->
                 val uid = result.user?.uid
                 if (uid == null) {
-                    _uiState.update { it.copy(isLoading = false, errorMessage = "User ID is null") }
+                    handleError("User ID is null")
                     return@addOnSuccessListener
                 }
-                finalizeUserRegistration(context, uid, userData)
+
+                val profileImageBase64 = userData.profileImageUri?.let { uri ->
+                    encodeImageToBase64(context, uri)
+                } ?: ""
+
+                val user = createUserMap(uid, userData, profileImageBase64)
+
+                saveUserToFirestore(uid, user)
             }
             .addOnFailureListener {
-                _uiState.update { it.copy(isLoading = false, errorMessage = it.errorMessage ?: "Registration failed") }
+                handleError(it.message ?: "Registration failed")
                 auth.currentUser?.delete()
             }
+    }
+
+    private fun createUserMap(
+        uid: String,
+        userData: RegisterUiState,
+        base64: String
+    ): Map<String, Any> {
+        return mapOf(
+            "uid" to uid,
+            "firstName" to userData.firstName,
+            "lastName" to userData.lastName,
+            "email" to userData.email,
+            "profileImageBase64" to base64
+        )
+    }
+
+    private fun saveUserToFirestore(uid: String, user: Map<String, Any>) {
+        firestore.collection("users").document(uid).set(user)
+            .addOnSuccessListener {
+                sendVerificationEmail()
+                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+            }
+            .addOnFailureListener {
+                handleError(it.message ?: "Failed to save user data")
+                auth.currentUser?.delete()
+            }
+    }
+
+    private fun handleError(message: String) {
+        _uiState.update { it.copy(isLoading = false, errorMessage = message) }
     }
 
     private fun validateInputs(userData: RegisterUiState): Boolean {
@@ -80,30 +112,6 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    private fun finalizeUserRegistration(
-        context: Context,
-        uid: String,
-        userData: RegisterUiState
-    ) {
-        userData.profileImageUri?.let { uri ->
-            uploadProfileImage(
-                context,
-                uid,
-                uri,
-                onSuccess = { imageUrl ->
-                    sendVerificationEmail()
-                    saveUserData(uid, userData, imageUrl)
-                },
-                onError = { error ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Image upload failed") }
-                    auth.currentUser?.delete()
-                }
-            )
-        } ?: run {
-            sendVerificationEmail()
-            saveUserData(uid, userData, "")
-        }
-    }
 
     private fun sendVerificationEmail() {
         auth.currentUser?.sendEmailVerification()
@@ -115,88 +123,15 @@ class RegisterViewModel @Inject constructor(
             }
     }
 
-    private fun uploadProfileImage(
-        context: Context,
-        uid: String,
-        uri: Uri,
-        onSuccess: (String) -> Unit,
-        onError: (Exception) -> Unit
-    ) {
-        try {
-            Log.d("Upload", "Creating temp file from URI...")
-            val tempFile = createTempFileFromUri(context, uid, uri)
-            Log.d("Upload", "Temp file created: ${tempFile.absolutePath}, size: ${tempFile.length()} bytes")
-
-            val storageRef = Firebase.storage.reference.child("users/$uid/profile.jpg")
-            Log.d("Upload", "Starting upload to Firebase at: users/$uid/profile.jpg")
-
-            storageRef.putFile(tempFile.toUri())
-                .addOnSuccessListener {
-                    Log.d("Upload", "Upload successful. Fetching download URL...")
-
-                    storageRef.downloadUrl
-                        .addOnSuccessListener { downloadUri ->
-                            Log.d("Upload", "Download URL fetched successfully: $downloadUri")
-                            onSuccess(downloadUri.toString())
-                            val deleted = tempFile.delete()
-                            Log.d("Upload", "Temp file deleted after success: $deleted")
-                        }
-                        .addOnFailureListener { downloadError ->
-                            Log.e("Upload", "Failed to get download URL: ${downloadError.message}", downloadError)
-                            onError(downloadError)
-                            val deleted = tempFile.delete()
-                            Log.d("Upload", "Temp file deleted after download URL failure: $deleted")
-                        }
-
-                }
-                .addOnFailureListener { uploadError ->
-                    Log.e("Upload", "Upload failed: ${uploadError.message}", uploadError)
-                    onError(uploadError)
-                    val deleted = tempFile.delete()
-                    Log.d("Upload", "Temp file deleted after upload failure: $deleted")
-                }
-
+    private fun encodeImageToBase64(context: Context, uri: Uri): String {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
+            Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
         } catch (e: Exception) {
-            Log.e("Upload", "Unexpected exception: ${e.message}", e)
-            onError(e)
+            ""
         }
-    }
-
-    private fun createTempFileFromUri(context: Context, uid: String, uri: Uri): File {
-        val tempFile = File.createTempFile("profile_${uid}", ".jpg", context.cacheDir)
-        Log.d("Upload", "Temp file path: ${tempFile.absolutePath}")
-
-        context.contentResolver.openInputStream(uri)?.use { input ->
-            FileOutputStream(tempFile).use { output ->
-                input.copyTo(output)
-                Log.d("Upload", "Copied URI content to temp file.")
-            }
-        } ?: throw IOException("Cannot open stream from URI: $uri")
-
-        return tempFile
-    }
-
-
-    private fun saveUserData(
-        uid: String,
-        userData: RegisterUiState,
-        imageUrl: String
-    ) {
-        val userMap = mapOf(
-            "uid" to uid,
-            "firstName" to userData.firstName,
-            "lastName" to userData.lastName,
-            "email" to userData.email,
-            "imageUrl" to imageUrl
-        )
-
-        firestore.collection("users").document(uid).set(userMap)
-            .addOnSuccessListener {
-                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
-            }
-            .addOnFailureListener {
-                _uiState.update { it.copy(isLoading = false, errorMessage = it.errorMessage ?: "Failed to save user data") }
-                auth.currentUser?.delete()
-            }
     }
 }

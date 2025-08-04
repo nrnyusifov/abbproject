@@ -30,6 +30,16 @@ fun LoginScreen(
     val isSuccess = uiState.isSuccess
     val isError = resetMessage != null
 
+    val savedEmail by viewModel.savedEmail.collectAsState(initial = "")
+    val rememberMe by viewModel.rememberMe.collectAsState(initial = false)
+
+    LaunchedEffect(key1 = savedEmail, key2 = rememberMe) {
+        if (savedEmail.isNotBlank()) {
+            viewModel.updateEmail(savedEmail)
+            viewModel.updateRememberMe(rememberMe)
+        }
+    }
+
     LaunchedEffect(Unit) {
         if (viewModel.isUserLoggedIn()) {
             navController.navigate(Routes.Home.route) {

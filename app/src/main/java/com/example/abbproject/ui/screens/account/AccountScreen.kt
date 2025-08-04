@@ -37,6 +37,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 @SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,15 +48,20 @@ fun AccountScreen(navController: NavController) {
     val scrollState = rememberScrollState()
     val clipboardManager = LocalClipboardManager.current
 
-    val rawBalance = 499.80f
+    val balance = remember { mutableFloatStateOf(499.80f) }
     val animatedBalance by animateFloatAsState(
-        targetValue = rawBalance,
+        targetValue = balance.floatValue,
         animationSpec = tween(durationMillis = 500)
     )
 
     val pageVisible = remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
+        delay(2000)
         pageVisible.value = true
+        delay(1000)
+        val newBalance = Random.nextDouble(100.00, 999.99)
+        balance.floatValue = String.format("%.2f", newBalance).toFloat()
     }
 
     Scaffold(
@@ -73,216 +80,227 @@ fun AccountScreen(navController: NavController) {
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = Color(0xFFF5F5F7)
     ) { innerPadding ->
-        AnimatedVisibility(
-            visible = pageVisible.value,
-            enter = fadeIn(animationSpec = tween(300)) + slideInVertically(initialOffsetY = { it / 4 }),
-            exit = fadeOut()
-        ) {
-            Column(
+        if (!pageVisible.value) {
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(scrollState)
-                    .padding(horizontal = 16.dp)
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Column(horizontalAlignment = Alignment.Start) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .background(Color(0xFF1D5DDB), shape = CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "$",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFEFF0F3)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text("USD hesab", fontSize = 14.sp, color = Color.Gray)
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        buildAnnotatedString {
-                            val parts = String.format("%.2f", animatedBalance).split(".")
-                            withStyle(style = SpanStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold)) {
-                                append("$${parts[0]}")
-                            }
-                            withStyle(style = SpanStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)) {
-                                append(".${parts[1]}")
-                            }
-                        },
-                        color = Color.Black
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(36.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                CircularProgressIndicator()
+            }
+        } else {
+            AnimatedVisibility(
+                visible = pageVisible.value,
+                enter = fadeIn(animationSpec = tween(300)) + slideInVertically(initialOffsetY = { it / 4 }),
+                exit = fadeOut()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = 16.dp)
                 ) {
-                    Button(
-                        onClick = { },
-                        shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF1D5DDB),
-                            contentColor = Color.White
-                        ),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Mədaxil")
-                    }
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    Button(
-                        onClick = { },
-                        shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF1D5DDB),
-                            contentColor = Color.White
-                        ),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Köçür")
-                    }
-
-                    Button(
-                        onClick = { },
-                        shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE6EEFF),
-                            contentColor = Color(0xFF1D5DDB)
-                        ),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.AccessTime, contentDescription = null, tint = Color(0xFF1D5DDB))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Tarixçə", color = Color(0xFF1D5DDB))
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(36.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Hesab məlumatları", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Column {
-                            Text("Hesab nömrəsi", fontSize = 14.sp, color = Color.Gray)
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("44313AZ34123123453534123", fontSize = 14.sp)
-                                Icon(
-                                    imageVector = Icons.Default.ContentCopy,
-                                    contentDescription = "Copy Account Number",
-                                    modifier = Modifier.clickable {
-                                        clipboardManager.setText(AnnotatedString("44313AZ34123123453534123"))
-                                    }
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Column {
-                            Text("İBAN", fontSize = 14.sp, color = Color.Gray)
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("AZE13AZ34123123453534123", fontSize = 14.sp)
-                                Icon(
-                                    imageVector = Icons.Default.ContentCopy,
-                                    contentDescription = "Copy IBAN",
-                                    modifier = Modifier.clickable {
-                                        clipboardManager.setText(AnnotatedString("AZE13AZ34123123453534123"))
-                                    }
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Text(
-                            text = "Hesab rekvizitləri",
-                            color = Color(0xFF1D5EDD),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.clickable { }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Hesab parametrləri", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Row(
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { }
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .size(48.dp)
+                                .background(Color(0xFF1D5DDB), shape = CircleShape),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Description,
-                                contentDescription = "Çıxarış əldə et",
-                                tint = Color(0xFF1A73E8),
-                                modifier = Modifier.size(20.dp)
+                            Text(
+                                text = "$",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFEFF0F3)
                             )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text("Çıxarış əldə et", fontSize = 15.sp)
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { }
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Text("USD hesab", fontSize = 14.sp, color = Color.Gray)
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            buildAnnotatedString {
+                                val parts = String.format("%.2f", animatedBalance).split(".")
+                                withStyle(style = SpanStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold)) {
+                                    append("$${parts[0]}")
+                                }
+                                withStyle(style = SpanStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)) {
+                                    append(".${parts[1]}")
+                                }
+                            },
+                            color = Color.Black
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(36.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Button(
+                            onClick = { },
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF1D5DDB),
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Hesabın adını dəyiş",
-                                tint = Color(0xFF1A73E8),
-                                modifier = Modifier.size(20.dp)
+                            Icon(Icons.Default.Add, contentDescription = null)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Mədaxil")
+                        }
+
+                        Button(
+                            onClick = { },
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF1D5DDB),
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Köçür")
+                        }
+
+                        Button(
+                            onClick = { },
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFE6EEFF),
+                                contentColor = Color(0xFF1D5DDB)
+                            ),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.AccessTime, contentDescription = null, tint = Color(0xFF1D5DDB))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Tarixçə", color = Color(0xFF1D5DDB))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(36.dp))
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text("Hesab məlumatları", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Column {
+                                Text("Hesab nömrəsi", fontSize = 14.sp, color = Color.Gray)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("44313AZ34123123453534123", fontSize = 14.sp)
+                                    Icon(
+                                        imageVector = Icons.Default.ContentCopy,
+                                        contentDescription = "Copy Account Number",
+                                        modifier = Modifier.clickable {
+                                            clipboardManager.setText(AnnotatedString("44313AZ34123123453534123"))
+                                        }
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Column {
+                                Text("İBAN", fontSize = 14.sp, color = Color.Gray)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("AZE13AZ34123123453534123", fontSize = 14.sp)
+                                    Icon(
+                                        imageVector = Icons.Default.ContentCopy,
+                                        contentDescription = "Copy IBAN",
+                                        modifier = Modifier.clickable {
+                                            clipboardManager.setText(AnnotatedString("AZE13AZ34123123453534123"))
+                                        }
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Text(
+                                text = "Hesab rekvizitləri",
+                                color = Color(0xFF1D5EDD),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.clickable { }
                             )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text("Hesabın adını dəyiş", fontSize = 15.sp)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text("Hesab parametrləri", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { }
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Description,
+                                    contentDescription = "Çıxarış əldə et",
+                                    tint = Color(0xFF1A73E8),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text("Çıxarış əldə et", fontSize = 15.sp)
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { }
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Hesabın adını dəyiş",
+                                    tint = Color(0xFF1A73E8),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text("Hesabın adını dəyiş", fontSize = 15.sp)
+                            }
                         }
                     }
                 }

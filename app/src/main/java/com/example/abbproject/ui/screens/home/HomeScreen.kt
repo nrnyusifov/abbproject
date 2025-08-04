@@ -1,5 +1,6 @@
 package com.example.abbproject.ui.screens.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,10 +11,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,19 +43,44 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(bottom = 24.dp)
             ) {
-                AsyncImage(
-                    model = it.imageUrl,
-                    contentDescription = "Profile Image",
-                    placeholder = rememberVectorPainter(Icons.Default.Person),
-                    error = rememberVectorPainter(Icons.Default.Person),
-                    modifier = Modifier
-                        .size(55.dp)
-                        .clip(CircleShape)
-                        .border(1.dp, Color.Gray, CircleShape)
-                        .clickable {
-                            navController.navigate(Routes.Profile.route)
+                val imageBitmap = remember(it.profileImageBase64) {
+                    if (it.profileImageBase64.isNotBlank()) {
+                        try {
+                            val bytes = android.util.Base64.decode(it.profileImageBase64, android.util.Base64.DEFAULT)
+                            android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                        } catch (e: Exception) {
+                            null
                         }
-                )
+                    } else null
+                }
+
+                if (imageBitmap != null) {
+                    Image(
+                        bitmap = imageBitmap.asImageBitmap(),
+                        contentDescription = "Profile Image",
+                        modifier = Modifier
+                            .size(55.dp)
+                            .clip(CircleShape)
+                            .border(1.dp, Color.Gray, CircleShape)
+                            .clickable {
+                                navController.navigate(Routes.Profile.route)
+                            }
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Default Profile",
+                        modifier = Modifier
+                            .size(55.dp)
+                            .clip(CircleShape)
+                            .border(1.dp, Color.Gray, CircleShape)
+                            .clickable {
+                                navController.navigate(Routes.Profile.route)
+                            }
+                            .padding(12.dp)
+                    )
+                }
+
 
                 Spacer(modifier = Modifier.width(12.dp))
 
