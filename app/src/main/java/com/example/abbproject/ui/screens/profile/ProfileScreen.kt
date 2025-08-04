@@ -1,6 +1,10 @@
 package com.example.abbproject.ui.screens.profile
 
-
+import android.graphics.BitmapFactory
+import android.util.Base64
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,8 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
@@ -22,14 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import com.example.abbproject.R
-
 
 @Composable
 fun ProfileScreen(
@@ -37,6 +39,16 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val user by viewModel.user.collectAsState()
+    val context = LocalContext.current
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            uri?.let {
+                viewModel.updateProfileImageFromUri(context, it)
+            }
+        }
+    )
 
     Box(
         modifier = Modifier
@@ -101,9 +113,10 @@ fun ProfileScreen(
                     val imageBitmap = remember(user?.profileImageBase64) {
                         user?.profileImageBase64?.takeIf { it.isNotBlank() }?.let {
                             try {
-                                val bytes = android.util.Base64.decode(it, android.util.Base64.DEFAULT)
-                                android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                val bytes = Base64.decode(it, Base64.DEFAULT)
+                                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                             } catch (e: Exception) {
+                                Log.e("HomeScreen", "Failed to decode profile image: ${e.message}")
                                 null
                             }
                         }
@@ -134,7 +147,6 @@ fun ProfileScreen(
                         )
                     }
 
-
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
@@ -142,7 +154,11 @@ fun ProfileScreen(
                             .size(24.dp)
                             .align(Alignment.BottomEnd)
                             .offset(4.dp, 4.dp)
-                            .background(Color.White, CircleShape)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .clickable {
+                                imagePickerLauncher.launch("image/*")
+                            }
                             .padding(4.dp)
                             .background(MaterialTheme.colorScheme.primary, CircleShape)
                             .padding(4.dp),
@@ -218,4 +234,3 @@ fun ProfileScreen(
         }
     }
 }
-

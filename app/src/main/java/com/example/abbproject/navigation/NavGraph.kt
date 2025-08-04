@@ -5,12 +5,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.abbproject.ui.screens.account.AccountScreen
+import com.example.abbproject.ui.screens.profile.ProfileScreen
 import com.example.abbproject.ui.screens.emailverification.EmailVerifyScreen
 import com.example.abbproject.ui.screens.login.LoginScreen
 import com.example.abbproject.ui.screens.register.RegisterScreen
 import com.example.abbproject.ui.screens.splash.SplashScreen
 import com.example.abbproject.ui.screens.home.HomeScreen
-import com.example.abbproject.ui.screens.profile.ProfileScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {

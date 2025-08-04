@@ -21,24 +21,27 @@ class HomeViewModel @Inject constructor(
     val user: StateFlow<User?> = _user
 
     init {
-        loadUser()
+        observeUser()
     }
 
-    private fun loadUser() {
+    private fun observeUser() {
         val uid = auth.currentUser?.uid ?: return
         firestore.collection("users").document(uid)
-            .get()
-            .addOnSuccessListener { document ->
-                val userData = document.toObject<User>()
-                _user.value = userData
-            }
-            .addOnFailureListener {
-                Log.e("HomeViewModel", "Failed to load user: ${it.message}")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("HomeViewModel", "Snapshot error: ${error.message}")
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val userData = snapshot.toObject<User>()
+                    _user.value = userData
+                    Log.d("HomeViewModel", "User updated from snapshot.")
+                }
             }
     }
 
     fun signOut() {
         auth.signOut()
     }
-
 }
