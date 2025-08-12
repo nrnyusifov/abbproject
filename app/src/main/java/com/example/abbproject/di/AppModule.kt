@@ -38,6 +38,4 @@ object AppModule{
     fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences {
         return UserPreferences(context)
     }
-
-
 }

@@ -17,11 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 import com.example.abbproject.navigation.Routes
 
 @Composable
@@ -107,6 +105,16 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth()
         ){
             Text("Account")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                navController.navigate(Routes.History.route)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ){
+            Text("History")
         }
 
         Spacer(modifier = Modifier.height(8.dp))

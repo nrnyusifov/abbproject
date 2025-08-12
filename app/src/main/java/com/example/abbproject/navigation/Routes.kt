@@ -8,4 +8,5 @@ sealed class Routes(val route: String) {
     object Emailverify : Routes("email_verification")
     object Profile : Routes("profile")
     object Account: Routes("account")
+    object History: Routes("history")
 }
