@@ -37,7 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun ExpenseSummaryCard() {
-    val categoryTitles = listOf("Maliyyə", "Restoran", "YDM", "Supermarket")
+    val categoryTitles = listOf("ATM Nağdlaşdırma", "Restoran", "Geyim", "Ərzaq mağazaları")
     val categoryColors = listOf(
         Color(0xFF22A889), Color(0xFF18A81D), Color(0xFFC68A00), Color(0xFFE61554)
     )

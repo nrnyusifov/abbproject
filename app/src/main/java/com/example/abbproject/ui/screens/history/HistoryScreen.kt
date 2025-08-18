@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -69,7 +70,7 @@ fun HistoryScreen(
                         modifier = Modifier
                             .size(32.dp)
                             .background(
-                                color = Color(0xFFFCF5FD),
+                                color = Color(0x1F63ED1F),
                                 shape = CircleShape
                             )
                             .clickable(onClick = onEyeClick),
@@ -318,6 +319,31 @@ fun HistoryScreen(
             }
         }
         ExpenseSummaryCard()
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Box(
+            modifier = Modifier
+                .height(40.dp)
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                text = "Bu gün",
+                modifier = Modifier.padding(start = 12.dp),
+                style = TextStyle(
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Normal,
+                    fontStyle = FontStyle.Normal,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    letterSpacing = (-0.2).sp,
+                    color = Color(0xFF484A4F)
+                )
+            )
+        }
+        OperationsCard()
     }
 }
 
