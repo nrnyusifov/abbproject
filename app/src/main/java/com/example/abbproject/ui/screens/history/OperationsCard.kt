@@ -1,16 +1,25 @@
 package com.example.abbproject.ui.screens.history
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun OperationsCard() {
@@ -50,7 +59,6 @@ fun OperationsCard() {
         "Azercell" to Color(0xFF74177F)
     )
 
-    // Merge everything into one list with their subtitles
     val allOperations = mutableListOf<Triple<String, Color, String>>()
 
     allOperations += market.map { Triple(it.first, it.second, "Ödəniş") }
@@ -59,8 +67,29 @@ fun OperationsCard() {
     allOperations += bank.map { Triple(it.first, it.second, "Köçürmə") }
     allOperations += mobileOperators.map { Triple(it.first, it.second, "Mobil Ödənişlər") }
 
-    // Shuffle for randomness
     val randomList = allOperations.shuffled()
+
+    Box(
+        modifier = Modifier
+            .height(40.dp)
+            .fillMaxWidth()
+            .padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            text = "Bu gün",
+            modifier = Modifier.padding(start = 12.dp),
+            style = TextStyle(
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Normal,
+                fontStyle = FontStyle.Normal,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                letterSpacing = (-0.2).sp,
+                color = Color(0xFF484A4F)
+            )
+        )
+    }
 
     Column(
         modifier = Modifier
