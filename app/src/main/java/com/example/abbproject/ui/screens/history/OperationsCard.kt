@@ -98,7 +98,7 @@ fun OperationsCard() {
             .background(Color(0xFFFCFDFF), shape = RoundedCornerShape(16.dp))
             .padding(8.dp)
     ) {
-        randomList.take(5).forEach { (title, color, subtitle) ->
+        randomList.take(10).forEach { (title, color, subtitle) ->
             val randomHour = (0..23).random().toString().padStart(2, '0')
             val randomMinute = (0..59).random().toString().padStart(2, '0')
             val randomAmount = "-${String.format("%.2f", (1..200).random() + Math.random())} ₼"

@@ -201,7 +201,9 @@ fun ExpenseSummaryCard() {
             columns = GridCells.Fixed(2),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 128.dp)
         ) {
             items(categoryValues.size) { index ->
                 val value = categoryValues[index]
