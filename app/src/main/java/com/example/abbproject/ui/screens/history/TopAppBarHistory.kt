@@ -16,12 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopAppBarHistory(
+    isSearching: Boolean,
     onEyeClick: () -> Unit
 ) {
     TopAppBar(
@@ -33,7 +33,7 @@ fun TopAppBarHistory(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Tarixçə",
+                    text = if (isSearching) "Axtarış" else "Tarixçə",
                     style = MaterialTheme.typography.titleLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onBackground
@@ -41,25 +41,22 @@ fun TopAppBarHistory(
             }
         },
         actions = {
-            Box(
-                modifier = Modifier.padding(end = 16.dp, top = 6.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(
-                            color = Color(0x1F63ED1F),
-                            shape = CircleShape
+            if (!isSearching) {
+                Box(modifier = Modifier.padding(end = 16.dp, top = 6.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .height(32.dp)
+                            .background(color = Color(0x1F63ED1F), shape = CircleShape)
+                            .clickable(onClick = onEyeClick)
+                            .padding(horizontal = 7.dp, vertical = 7.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Visibility,
+                            contentDescription = "Show",
+                            tint = Color(0xFF1B63ED)
                         )
-                        .clickable(onClick = onEyeClick),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Visibility,
-                        contentDescription = "Show history",
-                        tint = Color(0xFF1B63ED),
-                        modifier = Modifier.size(18.dp)
-                    )
+                    }
                 }
             }
         },
@@ -68,14 +65,4 @@ fun TopAppBarHistory(
             .fillMaxWidth()
             .height(44.dp)
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TopAppBarHistoryPreview() {
-    MaterialTheme {
-        TopAppBarHistory(
-            onEyeClick = { /* Preview only */ }
-        )
-    }
 }

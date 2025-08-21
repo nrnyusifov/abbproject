@@ -14,16 +14,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: HistoryViewModel = hiltViewModel()
 ) {
+    val focusManager = LocalFocusManager.current
+
     Scaffold(
         topBar = {
             TopAppBarHistory(
-                onEyeClick = { /* handle eye click */ }
+                isSearching = viewModel.isSearching,
+                onEyeClick = { }
             )
         }
     ) { innerPadding ->
@@ -32,12 +38,25 @@ fun HistoryScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(innerPadding),
-            contentPadding = PaddingValues(bottom = 16.dp)
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            item { SearchBarHistory() }
+            item {
+                SearchBarHistory(
+                    query = viewModel.query,
+                    isSearching = viewModel.isSearching,
+                    onQueryChange = viewModel::updateQuery,
+                    onFocused = { viewModel.startSearch() },
+                    onCancel = {
+                        viewModel.cancelSearch()
+                        focusManager.clearFocus()
+                    }
+                )
+            }
             item { HistoryFilters() }
-            item { ExpenseSummaryCard() }
-            item { OperationsCard() }
+            if (!viewModel.isSearching) {
+                item { ExpenseSummaryCard() }
+            }
+            item { OperationsCard(query = viewModel.query) }
         }
     }
 }
