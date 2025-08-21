@@ -2,6 +2,7 @@ package com.example.abbproject.ui.screens.history
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -12,11 +13,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,24 +46,40 @@ fun SearchBarHistory(
             modifier = Modifier
                 .weight(1f)
                 .heightIn(min = 40.dp)
+                .padding(8.dp)
                 .onFocusChanged { if (it.isFocused) onFocused() },
+            shape = RoundedCornerShape(12.dp),
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface
             ),
             placeholder = {
                 Text(
                     text = "Axtarış",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Normal,
+                        fontStyle = FontStyle.Normal,
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        letterSpacing = (-0.2).sp
+                    ),
                     color = Color(0xFF7A7D82),
                     textAlign = TextAlign.Start
                 )
+
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = null,
-                    tint = Color(0xFF7A7D82)
+                    tint = Color(0xFF7A7D82),
+                    modifier = Modifier
+                        .size(36.dp)
+                        .padding(top = 3.dp, start = 3.dp)
+                        .alpha(1f)
+                        .rotate(0f)
                 )
+
             },
             singleLine = true,
             maxLines = 1,
