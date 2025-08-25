@@ -17,7 +17,7 @@ import com.example.abbproject.ui.screens.home.HomeScreen
 fun NavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Routes.Splash.route
+        startDestination = Routes.History.route
     ) {
         composable(Routes.Splash.route) {
             SplashScreen(navController)

@@ -15,8 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,36 +30,49 @@ fun TopAppBarHistory(
 ) {
     TopAppBar(
         title = {
-            Box(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp),
-                contentAlignment = Alignment.Center
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = if (isSearching) "Axtarış" else "Tarixçə",
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
-        },
-        actions = {
-            if (!isSearching) {
-                Box(modifier = Modifier.padding(end = 16.dp, top = 6.dp)) {
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (isSearching) "Axtarış" else "Tarixçə",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.Medium,
+                            fontStyle = FontStyle.Normal,
+                            fontSize = 18.sp,
+                            lineHeight = 24.sp,
+                            letterSpacing = (-0.4).sp,
+                            color = Color(0xFF0A0B0D)
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 10.dp, start = 9.dp)
+                    )
+                }
+
+                if (!isSearching) {
                     Box(
                         modifier = Modifier
-                            .height(32.dp)
-                            .background(color = Color(0x1F63ED1F), shape = CircleShape)
-                            .clickable(onClick = onEyeClick)
-                            .padding(horizontal = 7.dp, vertical = 7.dp),
+                            .padding(end = 16.dp, top = 6.dp)
+                            .size(32.dp)
+                            .background(color = Color(0xFFD3DEF1), shape = CircleShape)
+                            .clickable(onClick = onEyeClick),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Visibility,
                             contentDescription = "Show",
-                            tint = Color(0xFF1B63ED)
+                            tint = Color(0xFF1B63ED),
+                            modifier = Modifier
+                                .size(18.dp)
                         )
+
                     }
                 }
             }

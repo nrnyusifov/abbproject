@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -26,6 +27,7 @@ fun HistoryScreen(
     val focusManager = LocalFocusManager.current
 
     Scaffold(
+        containerColor = Color(0xFFEDEFF2),
         topBar = {
             TopAppBarHistory(
                 isSearching = viewModel.isSearching,

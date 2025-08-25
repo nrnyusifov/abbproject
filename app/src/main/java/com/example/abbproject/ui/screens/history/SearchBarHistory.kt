@@ -87,14 +87,11 @@ fun SearchBarHistory(
                 focusedContainerColor = Color(0x0A0B0D0A),
                 unfocusedContainerColor = Color(0x0A0B0D0A),
                 disabledContainerColor = Color(0x0A0B0D0A),
+                errorContainerColor = Color(0x0A0B0D0A),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedPlaceholderColor = Color(0xFF7A7D82),
-                unfocusedPlaceholderColor = Color(0xFF7A7D82),
-                cursorColor = MaterialTheme.colorScheme.primary
+                errorIndicatorColor = Color.Transparent
             )
         )
 
